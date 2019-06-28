@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    slack-unfurling-trello
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+    Function:
+        Timeout: 30
+
+Parameters:
+    TrelloDeveloperPublicKey:
+        Type: String
+        Default: your-key
+    TrelloMemberToken:
+        Type: String
+        Default: your-token
+    SlackOauthAccessToken:
+        Type: String
+        Default: your-slack-oauth-token
+
+Resources:
+
+    SlackUnfrulingTrelloFunction:
+        Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+        Properties:
+            CodeUri: slack-unfurling-trello/
+            Handler: app.lambda_handler
+            Runtime: ruby2.5
+            Environment:
+                Variables:
+                    TRELLO_DEVELOPER_PUBLIC_KEY: !Ref TrelloDeveloperPublicKey
+                    TRELLO_MEMBER_TOKEN: !Ref TrelloMemberToken
+                    SLACK_OAUTH_ACCESS_TOKEN: !Ref SlackOauthAccessToken
+            MemorySize: 128
+            Events:
+                SlackUnfrulingTrello:
+                    Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+                    Properties:
+                        Path: /call
+                        Method: post
+
+Outputs:
+
+    SlackUnfrulingTrelloApi:
+      Description: "API Gateway endpoint URL for Prod stage for Slack Unfurling Trello function"
+      Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/call/"
+
+    SlackUnfrulingTrelloFunction:
+      Description: "Slack Unfurling Trello Lambda Function ARN"
+      Value: !GetAtt SlackUnfrulingTrelloFunction.Arn
+
+    SlackUnfrulingTrelloFunctionIamRole:
+      Description: "Implicit IAM Role created for Slack Unfurling Trello function"
+      Value: !GetAtt SlackUnfrulingTrelloFunctionRole.Arn
