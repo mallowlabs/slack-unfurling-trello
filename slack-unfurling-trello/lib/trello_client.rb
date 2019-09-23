@@ -3,7 +3,8 @@
 require 'trello'
 
 class TrelloClient
-  CARD_URL_PATTERN = /\Ahttps:\/\/trello\.com\/c\/(\w+)(\/.*)?\z/.freeze
+  TRELLO_URL_PATTERN = /\Ahttps:\/\/trello\.com\/([cb])\/(\w+)(\/.*)?\z/.freeze
+  TRELLO_COLOR = '#0079BF'
 
   def initialize
     Trello.configure do |config|
@@ -17,24 +18,36 @@ class TrelloClient
   end
 
   def target?(url)
-    url =~ CARD_URL_PATTERN
+    url =~ TRELLO_URL_PATTERN
   end
 
   def get(url)
-    return nil unless url =~ CARD_URL_PATTERN
+    return nil unless url =~ TRELLO_URL_PATTERN
 
     begin
-      card = Trello::Card.find($1)
-
-      info = {
-        title: card.name,
-        title_link: card.url,
-        text: card.desc,
-        color: '#0079BF'
-      }
+      case $1
+      when 'c'
+        card = Trello::Card.find($2)
+        info = {
+          title: card.name,
+          title_link: card.url,
+          text: card.desc,
+          color: TRELLO_COLOR
+        }
+      when 'b'
+        board = Trello::Board.find($2)
+        info = {
+          title: board.name,
+          title_link: board.url,
+          text: board.description,
+          color: TRELLO_COLOR
+        }
+      else
+        info = nil
+      end
 
       return info
-    rescue Trello::Error => ex
+    rescue Trello::Error
       nil
     end
   end
