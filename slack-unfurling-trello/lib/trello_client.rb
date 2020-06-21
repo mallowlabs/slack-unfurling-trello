@@ -3,7 +3,7 @@
 require 'trello'
 
 class TrelloClient
-  TRELLO_URL_PATTERN = /\Ahttps:\/\/trello\.com\/([cb])\/(\w+)(\/.*)?\z/.freeze
+  TRELLO_URL_PATTERN = /\Ahttps:\/\/trello\.com\/([cb])\/(\w+)(\/[^#]*)?(#comment-\w+)?\z/.freeze
   TRELLO_COLOR = '#0079BF'
 
   def initialize
@@ -34,6 +34,18 @@ class TrelloClient
           text: card.desc,
           color: TRELLO_COLOR
         }
+        if $4 # comment
+          comment_id = $4.gsub(/#comment-/, '')
+          comment = card.comments.detect { |c| c.action_id == comment_id }
+          if comment
+            info = {
+              title: card.name,
+              title_link: "#{card.url}#comment-#{comment_id}",
+              text: comment.text,
+              color: TRELLO_COLOR
+            }
+          end
+        end
       when 'b'
         board = Trello::Board.find($2)
         info = {
