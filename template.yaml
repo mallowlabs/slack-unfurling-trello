@@ -25,7 +25,7 @@ Resources:
         Properties:
             CodeUri: slack-unfurling-trello/
             Handler: app.lambda_handler
-            Runtime: ruby2.5
+            Runtime: ruby2.7
             Environment:
                 Variables:
                     TRELLO_DEVELOPER_PUBLIC_KEY: !Ref TrelloDeveloperPublicKey
