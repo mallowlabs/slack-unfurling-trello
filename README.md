@@ -63,9 +63,9 @@ $ sam deploy \
       SlackOauthAccessToken=your-slack-oauth-token
 ```
 
-Confirm your endpoint url.
-
 You can get trello developer public key from https://trello.com/1/appKey/generate .
+
+Confirm your endpoint url.
 
 ```bash
 $ aws cloudformation describe-stacks --stack-name your-slack-unfurling-trello --region ap-northeast-1
