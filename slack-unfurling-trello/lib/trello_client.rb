@@ -36,12 +36,12 @@ class TrelloClient
         }
         if $4 # comment
           comment_id = $4.gsub(/#comment-/, '')
-          comment = card.comments.detect { |c| c.action_id == comment_id }
+          comment = card.comments.detect { |c| c.id == comment_id }
           if comment
             info = {
               title: card.name,
               title_link: "#{card.url}#comment-#{comment_id}",
-              text: comment.text,
+              text: comment.data[:text],
               color: TRELLO_COLOR
             }
           end
