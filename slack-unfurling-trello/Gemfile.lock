@@ -50,7 +50,7 @@ GEM
     oauth-tty (1.0.5)
       version_gem (~> 1.1, >= 1.1.1)
     public_suffix (6.0.1)
-    rexml (3.3.8)
+    rexml (3.3.9)
     ruby-trello (4.2.0)
       activemodel (>= 6.0.0)
       addressable (~> 2.3)
