@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'minitest/autorun'
-require 'minitest/stub_any_instance'
 require 'webmock/minitest'
 
 require_relative '../../app.rb'
@@ -9,6 +8,16 @@ require_relative '../../app.rb'
 class AppTest < Minitest::Test
   def setup
     WebMock.disable_net_connect!
+
+    @original_developer_key = ENV['TRELLO_DEVELOPER_PUBLIC_KEY']
+    @original_member_token = ENV['TRELLO_MEMBER_TOKEN']
+    ENV['TRELLO_DEVELOPER_PUBLIC_KEY'] = 'dummy_key'
+    ENV['TRELLO_MEMBER_TOKEN'] = 'dummy_token'
+  end
+
+  def teardown
+    ENV['TRELLO_DEVELOPER_PUBLIC_KEY'] = @original_developer_key
+    ENV['TRELLO_MEMBER_TOKEN'] = @original_member_token
   end
 
   def event(body)
@@ -18,6 +27,9 @@ class AppTest < Minitest::Test
   end
 
   def test_url_verification_404
+    ENV['TRELLO_DEVELOPER_PUBLIC_KEY'] = nil
+    ENV['TRELLO_MEMBER_TOKEN'] = nil
+
     e = event({
       type: 'url_verification'
     }.to_json)
@@ -35,9 +47,7 @@ class AppTest < Minitest::Test
 
     expected_result = { statusCode: 200, body: JSON.generate(challenge: 'example') }
 
-    TrelloClient.stub_any_instance(:'enabled?', true) do
-      assert_equal(expected_result, lambda_handler(event: e, context: ''))
-    end
+    assert_equal(expected_result, lambda_handler(event: e, context: ''))
   end
 
   def test_event_callback_board
@@ -52,7 +62,7 @@ class AppTest < Minitest::Test
       }
     }.to_json)
 
-    stub_request(:get, 'https://api.trello.com/1/boards/123456?key&token').
+    stub_request(:get, 'https://api.trello.com/1/boards/123456?key=dummy_key&token=dummy_token').
       to_return(status: 200, body: {
         id: '123456',
         name: "board_name",
@@ -79,11 +89,7 @@ class AppTest < Minitest::Test
 
     expected_result = { statusCode: 200, body: JSON.generate(ok: true) }
 
-    Trello::Configuration.stub_any_instance(:'basic?', true) do
-      TrelloClient.stub_any_instance(:'enabled?', true) do
-        assert_equal(expected_result, lambda_handler(event: e, context: ''))
-      end
-    end
+    assert_equal(expected_result, lambda_handler(event: e, context: ''))
   end
 
   def test_event_callback_card
@@ -98,7 +104,7 @@ class AppTest < Minitest::Test
       }
     }.to_json)
 
-    stub_request(:get, 'https://api.trello.com/1/cards/123456?key&token').
+    stub_request(:get, 'https://api.trello.com/1/cards/123456?key=dummy_key&token=dummy_token').
       to_return(status: 200, body: {
         id: '123456',
         name: "card_name",
@@ -125,11 +131,7 @@ class AppTest < Minitest::Test
 
     expected_result = { statusCode: 200, body: JSON.generate(ok: true) }
 
-    Trello::Configuration.stub_any_instance(:'basic?', true) do
-      TrelloClient.stub_any_instance(:'enabled?', true) do
-        assert_equal(expected_result, lambda_handler(event: e, context: ''))
-      end
-    end
+    assert_equal(expected_result, lambda_handler(event: e, context: ''))
   end
 
   def test_event_callback_card_comment
@@ -144,7 +146,7 @@ class AppTest < Minitest::Test
       }
     }.to_json)
 
-    stub_request(:get, 'https://api.trello.com/1/cards/123456?key&token').
+    stub_request(:get, 'https://api.trello.com/1/cards/123456?key=dummy_key&token=dummy_token').
       to_return(status: 200, body: {
         id: '123456',
         name: "card_name",
@@ -153,7 +155,7 @@ class AppTest < Minitest::Test
       }.to_json, headers: { }
     )
 
-    stub_request(:get, 'https://api.trello.com/1/cards/123456/actions?filter=commentCard&key&token').
+    stub_request(:get, 'https://api.trello.com/1/cards/123456/actions?filter=commentCard&key=dummy_key&token=dummy_token').
       to_return(status: 200, body:
         [
           {
@@ -183,10 +185,6 @@ class AppTest < Minitest::Test
 
     expected_result = { statusCode: 200, body: JSON.generate(ok: true) }
 
-    Trello::Configuration.stub_any_instance(:'basic?', true) do
-      TrelloClient.stub_any_instance(:'enabled?', true) do
-        assert_equal(expected_result, lambda_handler(event: e, context: ''))
-      end
-    end
+    assert_equal(expected_result, lambda_handler(event: e, context: ''))
   end
 end
